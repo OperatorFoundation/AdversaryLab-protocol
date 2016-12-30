@@ -1,8 +1,6 @@
 package adversarylab
 
 import (
-	"fmt"
-
 	"github.com/go-mangos/mangos"
 	"github.com/go-mangos/mangos/protocol/pub"
 	"github.com/go-mangos/mangos/transport/tcp"
@@ -36,8 +34,8 @@ func PubsubListen(url string, source PubsubSource) PubsubServer {
 
 func (self PubsubServer) Pump() {
 	for bs := range self.source {
-		fmt.Println("pumping")
+		//		fmt.Println("pumping")
 		self.sock.Send(bs)
-		fmt.Println("pumped")
+		//		fmt.Println("pumped")
 	}
 }

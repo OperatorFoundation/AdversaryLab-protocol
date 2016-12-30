@@ -35,10 +35,10 @@ func Connect(url string) Client {
 	}
 }
 
-func (self Client) AddPacket(protocol string, dataset string, incoming bool, payload []byte) {
-	var packet Packet = Packet{Protocol: protocol, Dataset: dataset, Incoming: incoming, Payload: payload}
+func (self Client) AddTrainPacket(dataset string, allowBlock bool, incoming bool, payload []byte) {
+	var packet TrainPacket = TrainPacket{Dataset: dataset, AllowBlock: allowBlock, Incoming: incoming, Payload: payload}
 
-	var value = NamedType{Name: "adversarylab.Packet", Value: packet}
+	var value = NamedType{Name: "adversarylab.TrainPacket", Value: packet}
 
 	var buff = new(bytes.Buffer)
 	var bw = bufio.NewWriter(buff)
@@ -57,8 +57,30 @@ func (self Client) AddPacket(protocol string, dataset string, incoming bool, pay
 	self.request(buff.Bytes())
 }
 
-func (self Client) GetIncomingRule(protocol string) []byte {
-	var request RuleRequest = RuleRequest{protocol: protocol, incoming: true}
+func (self Client) AddTestPacket(dataset string, incoming bool, payload []byte) {
+	var packet TestPacket = TestPacket{Dataset: dataset, Incoming: incoming, Payload: payload}
+
+	var value = NamedType{Name: "adversarylab.TrainPacket", Value: packet}
+
+	var buff = new(bytes.Buffer)
+	var bw = bufio.NewWriter(buff)
+	//  var b []byte = make([]byte, 0, 2048)
+	var h codec.Handle = NamedTypeHandle()
+
+	//  var enc *codec.Encoder = codec.NewEncoderBytes(&b, h)
+	var enc *codec.Encoder = codec.NewEncoder(bw, h)
+	var err error = enc.Encode(value)
+	if err != nil {
+		die("Error encoding packet: %s", err.Error())
+	}
+
+	bw.Flush()
+
+	self.request(buff.Bytes())
+}
+
+func (self Client) GetIncomingRule(dataset string) []byte {
+	var request RuleRequest = RuleRequest{Dataset: dataset, Incoming: true}
 	var b []byte = make([]byte, 0, 64)
 	var h codec.Handle = new(codec.CborHandle)
 	var enc *codec.Encoder = codec.NewEncoderBytes(&b, h)
@@ -70,8 +92,8 @@ func (self Client) GetIncomingRule(protocol string) []byte {
 	return self.request(b)
 }
 
-func (self Client) GetOutgoingRule(protocol string) []byte {
-	var request RuleRequest = RuleRequest{protocol: protocol, incoming: false}
+func (self Client) GetOutgoingRule(dataset string) []byte {
+	var request RuleRequest = RuleRequest{Dataset: dataset, Incoming: false}
 	var b []byte = make([]byte, 0, 64)
 	var h codec.Handle = new(codec.CborHandle)
 	var enc *codec.Encoder = codec.NewEncoderBytes(&b, h)

@@ -4,21 +4,29 @@ import (
 	"github.com/ugorji/go/codec"
 )
 
-type Packet struct {
-	Protocol string
+type TrainPacket struct {
+	Dataset    string
+	AllowBlock bool
+	Incoming   bool
+	Payload    []byte
+}
+
+type TestPacket struct {
 	Dataset  string
 	Incoming bool
 	Payload  []byte
 }
 
 type RuleRequest struct {
-	protocol string
-	incoming bool
+	Dataset  string
+	Incoming bool
 }
 
 type Rule struct {
-	Path     string
-	Sequence []byte
+	Dataset       string
+	RequireForbid bool
+	Incoming      bool
+	Sequence      []byte
 }
 
 type ResultStatus int
@@ -28,9 +36,17 @@ const (
 	Error
 )
 
-func PacketFromMap(data map[interface{}]interface{}) Packet {
-	packet := Packet{}
-	packet.Protocol = data["Protocol"].(string)
+func TrainPacketFromMap(data map[interface{}]interface{}) TrainPacket {
+	packet := TrainPacket{}
+	packet.Dataset = data["Dataset"].(string)
+	packet.AllowBlock = data["AllowBlock"].(bool)
+	packet.Incoming = data["Incoming"].(bool)
+	packet.Payload = data["Payload"].([]byte)
+	return packet
+}
+
+func TestPacketFromMap(data map[interface{}]interface{}) TestPacket {
+	packet := TestPacket{}
 	packet.Dataset = data["Dataset"].(string)
 	packet.Incoming = data["Incoming"].(bool)
 	packet.Payload = data["Payload"].([]byte)
@@ -39,7 +55,9 @@ func PacketFromMap(data map[interface{}]interface{}) Packet {
 
 func RuleFromMap(data map[interface{}]interface{}) Rule {
 	rule := Rule{}
-	rule.Path = data["Path"].(string)
+	rule.Dataset = data["Dataset"].(string)
+	rule.RequireForbid = data["RequireForbid"].(bool)
+	rule.Incoming = data["Incoming"].(bool)
 	rule.Sequence = data["Sequence"].([]byte)
 	return rule
 }
